@@ -1,0 +1,279 @@
+\documentclass[12pt,a4paper]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{graphicx}
+\usepackage{array}
+\usepackage{geometry}
+\usepackage{placeins}
+\usepackage{booktabs}
+\usepackage{amsmath,amssymb}
+\usepackage{microtype}
+\usepackage{cite}
+\usepackage{tabularx}
+\usepackage{url}
+\usepackage[hidelinks]{hyperref}
+\geometry{
+  top=2cm,
+  bottom=2cm,
+  left=2.5cm,
+  right=2.5cm
+}
+\hypersetup{
+  pdftitle={IoT-Based Fire Detection and Warning System},
+  pdfauthor={Hoang Nhat Tam, Phan Tan Hung, Le Vo Tuan Kiet}
+}
+
+\newcolumntype{Y}{>{\raggedright\arraybackslash}X}
+\setlength{\parindent}{1.5em}
+\setlength{\parskip}{0.25em plus 0.08em minus 0.04em}
+\setlength{\textfloatsep}{12pt plus 2pt minus 3pt}
+\setlength{\floatsep}{10pt plus 2pt minus 2pt}
+\setlength{\intextsep}{10pt plus 2pt minus 2pt}
+\renewcommand{\arraystretch}{1.18}
+
+\begin{document}
+
+% Single institutional cover based on the original article manuscript.
+\begin{titlepage}
+\thispagestyle{empty}
+\centering
+\includegraphics[width=5cm]{src/logofpt.png}\par
+\vspace{1.1cm}
+{\Large\bfseries FPT UNIVERSITY\par}
+\vspace{0.8cm}
+{\large INTERNET OF THINGS -- IOT102\par}
+\vspace{1.4cm}
+{\LARGE\bfseries FINAL PROJECT REPORT\par}
+\vspace{0.6cm}
+{\Large\bfseries IoT-Based Fire Detection\\and Warning System\par}
+\vspace{1.1cm}
+{\large Class: SE2027 \quad--\quad Group: G2\par}
+\vspace{0.8cm}
+\begin{tabular}{p{8cm}p{3.5cm}}
+\toprule
+\textbf{Group Member} & \textbf{Student ID}\\
+\midrule
+Hoang Nhat Tam & SE202018\\
+Phan Tan Hung & SE201027\\
+Le Vo Tuan Kiet & SE203376\\
+\bottomrule
+\end{tabular}
+\vspace{1.0cm}
+
+{\large\textbf{Instructor:} Nguyen Duc Loi\par}
+\vfill
+{\large Ho Chi Minh City\par}
+{\large November 2026\par}
+\end{titlepage}
+
+\begin{abstract}
+This report presents an ESP32-based fire detection and warning prototype integrating an LM35 temperature sensor, an MQ-2 smoke/gas module, and a flame sensor. A rule-based algorithm classifies conditions as SAFE, WARNING, or DANGER. Local feedback is provided by an LCD1602, three LEDs, and an active buzzer; an SG90 servo represents an automatic door, and a push button provides manual control outside DANGER. The team reported that all eight predefined functional cases passed, covering state selection and door behavior. These functional results are not a measurement of detection accuracy. The implemented firmware is entirely local and contains no Wi-Fi, cloud, dashboard, or machine-learning functionality.
+\end{abstract}
+
+\noindent\textbf{Keywords:} ESP32, fire detection, Internet of Things, LM35, MQ-2, multisensor warning, embedded systems.
+
+\section{Introduction}
+Early recognition of temperature rise, flame, and smoke or gas can support timely local warning. A single detector or a fixed threshold may, however, respond to environmental interference.
+
+The G2 prototype instead uses transparent fixed rules that run locally on an ESP32. This avoids a training dataset and reduces implementation complexity, but it cannot provide the discrimination of a validated data-driven model. The project objectives are to integrate three sensing modalities, implement three warning states, provide local visual and audible feedback, demonstrate automatic and manual model-door control, and verify these functions with predefined cases. Advanced methods and remote monitoring are discussed only as future work.
+
+\section{Related Work}
+Yu \emph{et al.} analyzed similarity among time-aligned detector signals \cite{yu2023multidetector}, while Fathoni \emph{et al.} used a radial-basis-function network with multiple fire and gas sensors \cite{fathoni2025multisensor}. Other published systems use a hierarchical decision tree on ESP32 \cite{purba2026smartsafety}, remote monitoring through Blynk and Telegram \cite{ramadani2026blynk}, gas-sensor-array calibration \cite{solorzano2022gas}, recurrent trend prediction \cite{nakip2021rtpnn}, or fuzzy-logic-based assessment \cite{rehman2021smartfire}.
+
+\section{Methods and Materials}
+
+\subsection{System Architecture}
+The sensing layer comprises the LM35, MQ-2 digital output, and flame-sensor digital output. The ESP32 performs local acquisition and rule evaluation. The output layer comprises an LCD1602, green/yellow/red LEDs, one active buzzer, and an SG90 servo. A push button is an additional input for manual door control.
+
+Figure~\ref{fig:block} also shows MQTT, Node-RED, CSV logging, and a web dashboard in a proposed cloud/application layer. None of those blocks is implemented by the final firmware; the solid hardware/edge layer is the implemented scope.
+
+\begin{figure}[!htb]
+  \centering
+  \includegraphics[width=0.75\linewidth,height=0.42\textheight,keepaspectratio]{src/BlockDiagram_IOT102_G2-BlockDiagram.drawio.png}
+  \caption{System block diagram. The cloud/application layer is a proposed extension, not an implemented result.}
+  \label{fig:block}
+\end{figure}
+\FloatBarrier
+
+\subsection{Hardware Components}
+The ESP32 DevKit supplies the processing, ADC, GPIO, I2C, and servo-control interfaces. Table~\ref{tab:hardware} lists the main prototype hardware.
+
+\begin{table}[!htb]
+\caption{Main Hardware Components}
+\label{tab:hardware}
+\centering
+\begin{tabularx}{0.94\linewidth}{@{}p{0.25\linewidth}Y@{}}
+\toprule
+\textbf{Component} & \textbf{Function in the prototype}\\
+\midrule
+ESP32 DevKit & Local acquisition, classification, and output control\\
+LM35 & Analog temperature sensing\\
+MQ-2 module & Digital smoke/gas trigger\\
+Flame module & Digital flame trigger\\
+LCD1602 I2C & Sensor and state display\\
+Three LEDs & SAFE, WARNING, and DANGER indication\\
+Active buzzer & Intermittent or continuous audible warning\\
+SG90 servo & Model-door actuation\\
+Push button & Debounced manual door control\\
+\bottomrule
+\end{tabularx}
+\end{table}
+\FloatBarrier
+
+\subsection{Circuit Design and GPIO Mapping}
+Table~\ref{tab:gpio} is transcribed from the final sketch, which is the source of truth for implemented pin assignments.
+
+\begin{table}[!htb]
+\caption{ESP32 GPIO Mapping in the Final Firmware}
+\label{tab:gpio}
+\centering
+\begin{tabularx}{0.90\linewidth}{@{}Y>{\centering\arraybackslash}p{0.09\linewidth}Y>{\centering\arraybackslash}p{0.09\linewidth}@{}}
+\toprule
+\textbf{Device/signal} & \textbf{GPIO} & \textbf{Device/signal} & \textbf{GPIO}\\
+\midrule
+LM35 analog & 34 & Active buzzer & 15\\
+MQ-2 digital & 18 & Push button & 33\\
+Flame digital & 19 & SG90 signal & 32\\
+LCD SDA & 21 & Green LED & 25\\
+LCD SCL & 22 & Yellow LED & 26\\
+ & & Red LED & 27\\
+\bottomrule
+\end{tabularx}
+\end{table}
+\FloatBarrier
+
+The team reports powering the ESP32 board from a 5~V input and powering the LM35 and active buzzer from the board's 3.3~V rail. The reduced buzzer voltage was intentionally used to lower classroom demonstration volume. This report records the prototype configuration; it does not claim that the arrangement has been electrically validated. The exact LM35 variant, buzzer rating, 5~V module output levels, I2C pull-ups, servo supply capacity, and common-ground wiring must be checked against component specifications and physical wiring before reuse.
+
+Figure~\ref{fig:circuit} documents the intended interconnection and the final GPIO numbers. It remains a design artefact rather than proof of electrical compliance.
+
+\begin{figure}[!htb]
+  \centering
+  \includegraphics[width=0.94\linewidth,height=0.50\textheight,keepaspectratio]{\detokenize{src/BlockDiagram_IOT102_G2-Circuit Schematic.drawio.png}}
+  \caption{Circuit schematic and GPIO connections; supply and logic-level compatibility remain to be validated.}
+  \label{fig:circuit}
+\end{figure}
+\FloatBarrier
+
+\subsection{Sensor Data Processing}
+The sketch averages ten calls to \texttt{analogReadMilliVolts()}, separated by 5~ms delays, and computes
+\begin{equation}
+T~[^{\circ}\mathrm{C}]=\frac{\overline{V}_{\mathrm{LM35}}~[\mathrm{mV}]}{10}.
+\end{equation}
+This uses the LM35 nominal 10~mV/$^{\circ}$C transfer factor. Averaging can reduce random variation but is not a substitute for calibration. Espressif documents ADC reference-voltage variation and calibration mechanisms \cite{espressif_adc_calibration}. The MQ-2 and flame modules are read only as active-LOW digital triggers; the firmware therefore does not estimate gas concentration or flame intensity.
+
+\subsection{Fire Detection Algorithm}
+Let $F$ denote the active flame input, $S$ the active MQ-2 input, and $T$ the estimated temperature. The highest-priority condition is
+\begin{equation}
+D=F\lor S\lor(T\geq43^{\circ}\mathrm{C}).
+\end{equation}
+If $D$ is false, $40\leq T<43^{\circ}$C produces WARNING; otherwise the state is SAFE. Table~\ref{tab:states} gives the corresponding outputs.
+
+\begin{table}[!htb]
+\caption{Warning States Implemented by the Firmware}
+\label{tab:states}
+\centering
+\begin{tabularx}{0.96\linewidth}{@{}p{0.12\linewidth}YY@{}}
+\toprule
+\textbf{State} & \textbf{Condition} & \textbf{Output behavior}\\
+\midrule
+SAFE & No flame/MQ-2 trigger and $T<40^{\circ}$C & Green LED; buzzer off\\
+WARNING & No danger and $40\leq T<43^{\circ}$C & Yellow LED; buzzer 500~ms on/500~ms off\\
+DANGER & Flame or MQ-2 trigger, or $T\geq43^{\circ}$C & Red LED; continuous buzzer; door commanded open\\
+\bottomrule
+\end{tabularx}
+\end{table}
+\FloatBarrier
+
+In DANGER the servo is commanded to $90^{\circ}$ and the button cannot close the door. Outside DANGER, a new active-LOW button press, validated with a 50~ms debounce interval under \texttt{INPUT\_PULLUP}, toggles the servo between $0^{\circ}$ and $90^{\circ}$. Clearing DANGER does not automatically close the door; the last door state persists until a valid manual press. Figure~\ref{fig:flowchart} summarizes this behavior.
+
+\begin{figure}[!htb]
+  \centering
+  \includegraphics[width=0.60\linewidth,height=0.58\textheight,keepaspectratio]{src/BlockDiagram_IOT102_G2-FlowChart.drawio.png}
+  \caption{State classification and door-control flow based on the final firmware.}
+  \label{fig:flowchart}
+\end{figure}
+\FloatBarrier
+
+\subsection{Software Implementation}
+Initialization configures 12-bit ADC operation, GPIO directions, a 100~kHz I2C bus on GPIO21/22, serial output at 115200 baud, and 50~Hz servo control. The firmware probes LCD addresses \texttt{0x27} and \texttt{0x3F}. Each loop reads the sensors, derives the state, updates door control, LEDs, buzzer, LCD, and serial output, and then delays 50~ms. The code does not implement Wi-Fi, MQTT, Node-RED, Blynk, a database, CSV logging, a remote dashboard, or AI/ML classification.
+
+\section{Results and Discussion}
+
+\subsection{Experimental Procedure and Functional Results}
+The group exercised eight predefined cases intended to check rule selection and door-control behavior. The team reported all eight as PASS. Table~\ref{tab:tests} records that confirmation; raw logs, repeated-trial counts, and measured response times were not supplied.
+
+\begin{table}[!htb]
+\caption{Team-Reported Functional Test Results}
+\label{tab:tests}
+\centering
+\small
+\begin{tabularx}{0.98\linewidth}{@{}p{0.07\linewidth}YY>{\centering\arraybackslash}p{0.10\linewidth}@{}}
+\toprule
+\textbf{ID} & \textbf{Stimulus} & \textbf{Expected/observed behavior} & \textbf{Result}\\
+\midrule
+TC01 & Normal condition & SAFE & PASS\\
+TC02 & $40\leq T<43^{\circ}$C; no digital trigger & WARNING & PASS\\
+TC03 & $T\geq43^{\circ}$C & DANGER & PASS\\
+TC04 & Flame input active & DANGER & PASS\\
+TC05 & MQ-2 input active & DANGER & PASS\\
+TC06 & Button pressed during DANGER & Door remains open & PASS\\
+TC07 & DANGER condition removed & Door remains open & PASS\\
+TC08 & Button pressed during SAFE & Door toggles & PASS\\
+\bottomrule
+\end{tabularx}
+\end{table}
+\FloatBarrier
+
+The 8/8 result establishes agreement with these selected functional expectations only. It must not be interpreted as 100\% fire-detection accuracy. Quantitative evaluation of response latency, LM35 error, false-positive rate, false-negative rate, and long-term reliability has not been performed or documented.
+
+\subsection{Prototype Demonstration}
+The assembled prototype integrates the sensors, indicators, LCD, buzzer, and model-door servo. A submission-quality physical-prototype photograph was not available in the repository during report preparation; Figure~\ref{fig:prototype} intentionally remains a compilable placeholder.
+
+\begin{figure}[!htb]
+\centering
+\IfFileExists{src/prototype.png}{%
+  \includegraphics[width=0.72\linewidth,height=0.28\textheight,keepaspectratio]{src/prototype.png}%
+}{%
+  \fbox{\parbox[c][2.7cm][c]{0.72\linewidth}{\centering\textbf{TODO: INSERT PHYSICAL PROTOTYPE PHOTOGRAPH}\\Use an uncropped, readable image of the final wiring and model door.}}%
+}
+\caption{Physical prototype of the ESP32 fire detection system (image pending).}
+\label{fig:prototype}
+\end{figure}
+\FloatBarrier
+
+\subsection{Discussion and Limitations}
+Local processing allows the alarm and door demonstration to operate without an Internet connection. The OR rule also reacts when any one danger indicator is active. Its simplicity is a trade-off: a transient digital trigger or non-fire smoke/gas source can cause DANGER, and there is no hysteresis near the temperature thresholds. Published multisensor fusion and temporal methods provide directions for reducing nuisance alarms \cite{yu2023multidetector,solorzano2022gas,nakip2021rtpnn}, but the G2 prototype did not implement or evaluate them.
+
+Further limitations are the lack of sensor calibration, quantitative test evidence, fault detection, power/logic-level validation, and safety certification. The SG90 actuates a classroom model and is not an emergency-door device. Accordingly, the prototype must not be represented or deployed as a certified fire-safety system.
+
+\section{Conclusion and Future Work}
+The project implements a local ESP32 prototype that combines LM35, MQ-2, and flame inputs with three warning states, an LCD, three LEDs, one buzzer, and model-door control. The firmware behavior and GPIO descriptions in this report are aligned with \texttt{src/FireDetectionSingleFinal.ino}. The team reported PASS for all eight predefined functional cases, while no statistical detection-performance claim is made.
+
+Future work should first validate the physical schematic, power rails, logic levels, and sensor calibration, then collect timestamped repeated trials to quantify latency and false alarms. Hysteresis, sensor-fault handling, and evidence-based multisensor fusion can then be evaluated. Wi-Fi dashboards or Blynk may be added as optional monitoring extensions, but local warning behavior should remain independent of connectivity.
+
+\section*{Author Contributions}
+All members contributed approximately 33.33\%. Hoang Nhat Tam (SE202018) handled project coordination, research, and report preparation. Phan Tan Hung (SE201027) handled firmware, sensor integration, and debugging. Le Vo Tuan Kiet (SE203376) handled hardware assembly, circuit work, and prototype testing. Final review and project decisions were shared by the group.
+
+\begin{thebibliography}{00}
+\bibitem{yu2023multidetector} M. Yu, H. Yuan, K. Li, and J. Wang, ``Research on multi-detector real-time fire alarm technology based on signal similarity,'' \emph{Fire Safety Journal}, vol. 136, Art. no. 103724, 2023, doi: 10.1016/j.firesaf.2022.103724.
+
+\bibitem{fathoni2025multisensor} K. Fathoni, A. F. Suni, N. Iksan, and M. S. Aziz, ``Multisensor integration in early fire and gas detection based on artificial neural network,'' \emph{Edu Komputika Journal}, vol. 12, no. 2, pp. 157--167, 2025, doi: 10.15294/edukom.v12i2.27436.
+
+\bibitem{purba2026smartsafety} J. Purba, D. Kiswanto, J. B. Henrydunan, and R. Dly, ``Smart Safety Room: ESP32 decision tree-based multi-hazard detection system,'' \emph{Journal of Artificial Intelligence and Engineering Applications}, vol. 5, no. 2, pp. 2627--2637, 2026, doi: 10.59934/jaiea.v5i2.1947.
+
+\bibitem{ramadani2026blynk} N. Ramadani, ``IoT-based early fire detection system using flame and gas sensors with Telegram Bot and Blynk Dashboard integration,'' \emph{Journal of Artificial Intelligence and Engineering Applications}, vol. 6, no. 1, pp. 603--612, 2026, doi: 10.59934/jaiea.v6i1.2805.
+
+\bibitem{solorzano2022gas} A. Sol\'orzano \emph{et al.}, ``Early fire detection based on gas sensor arrays: Multivariate calibration and validation,'' \emph{Sensors and Actuators B: Chemical}, vol. 352, Art. no. 130961, 2022, doi: 10.1016/j.snb.2021.130961.
+
+\bibitem{nakip2021rtpnn} M. Nakip, C. G\"uzeli\c{s}, and O. Yildiz, ``Recurrent trend predictive neural network for multi-sensor fire detection,'' \emph{IEEE Access}, vol. 9, pp. 84204--84216, 2021, doi: 10.1109/ACCESS.2021.3087736.
+
+\bibitem{rehman2021smartfire} A. Rehman \emph{et al.}, ``Smart fire detection and deterrent system for human savior by using Internet of Things (IoT),'' \emph{Energies}, vol. 14, no. 17, Art. no. 5500, 2021, doi: 10.3390/en14175500.
+
+\bibitem{espressif_adc_calibration} Espressif Systems, ``Analog to Digital Converter (ADC) calibration driver,'' \emph{ESP-IDF Programming Guide}. [Online]. Available: \url{https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/peripherals/adc/adc_calibration.html}. Accessed: Nov. 3, 2026.
+\end{thebibliography}
+
+\section*{AI Usage Declaration}
+Generative AI, particularly ChatGPT by OpenAI, assisted literature exploration, technical explanations, design review, and academic writing. The team verified AI suggestions against the actual firmware, hardware documentation, and available functional-test results, and distinguished implemented features from proposed extensions. AI output was not accepted automatically. All final design decisions, implementation activities, observations, and conclusions remain the responsibility of the group members. Selected verification and reflection records are maintained separately in the AI Audit Log; Blynk is an IoT platform and is not identified as a generative-AI tool.
+
+\end{document}

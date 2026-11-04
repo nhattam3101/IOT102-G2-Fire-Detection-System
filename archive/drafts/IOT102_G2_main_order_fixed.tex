@@ -1,0 +1,942 @@
+
+\documentclass[12pt,a4paper]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{graphicx}
+\usepackage{array}
+\usepackage{geometry}
+\usepackage{placeins} % Keep diagrams and tables near their explanations
+
+\geometry{
+    top=2cm,
+    bottom=2cm,
+    left=2.5cm,
+    right=2.5cm
+}
+
+\begin{document}
+
+\begin{titlepage}
+\centering
+
+% ========== FPT LOGO ==========
+\includegraphics[width=5cm]{../../reports/overleaf/src/logofpt.png}
+
+\vspace{1.1cm}
+
+{\Large\bfseries FPT UNIVERSITY\par}
+
+\vspace{0.8cm}
+
+{\large INTERNET OF THINGS -- IOT102\par}
+
+\vspace{1.4cm}
+
+{\LARGE\bfseries FINAL PROJECT REPORT\par}
+
+\vspace{0.6cm}
+
+{\Large\bfseries
+IoT-Based Fire Detection\\
+and Warning System\par}
+
+\vspace{1.1cm}
+
+{\large Class: SE2027 \qquad Group: G2\par}
+
+\vspace{0.8cm}
+
+% ========== GROUP MEMBERS ==========
+\renewcommand{\arraystretch}{1.35}
+
+\begin{tabular}{p{8cm} p{3.5cm}}
+\hline
+\textbf{Group Member} & \textbf{Student ID}\\
+\hline
+Hoang Nhat Tam & SE202018\\
+Phan Tan Hung & SE201027\\
+Le Vo Tuan Kiet & SE203376\\
+\hline
+\end{tabular}
+
+\vspace{1.0cm}
+
+{\large\textbf{Instructor:} Nguyen Duc Loi\par}
+
+\vfill
+
+{\large Ho Chi Minh City\par}
+{\large November 2026\par}
+
+\end{titlepage}
+
+% ========== REPORT CONTENT ==========
+
+% ==========================================
+% FINAL PROJECT REPORT CONTENT
+% ==========================================
+
+\begin{abstract}
+Fire incidents can cause significant damage to human life
+and property when early warning mechanisms are unavailable
+or ineffective. This project presents an ESP32-based fire
+detection and warning prototype integrating an LM35
+temperature sensor, an MQ-2 smoke/gas sensor, and a flame
+sensor. The system employs a rule-based detection algorithm
+to classify environmental conditions into three states:
+SAFE, WARNING, and DANGER. Local feedback is provided
+through an LCD1602 display, three status LEDs, and an
+active buzzer. An SG90 servo motor simulates automatic
+door opening during dangerous conditions, while a push
+button supports manual door control when the system is
+not in the DANGER state. The prototype was evaluated
+using eight predefined functional test scenarios covering
+sensor detection, state transitions, and door-control
+behavior. All eight scenarios were reported as passing
+during group testing. The current implementation operates
+locally without cloud connectivity. Future development
+may include remote monitoring, improved sensor
+calibration, and false-alarm reduction techniques.
+\end{abstract}
+
+\noindent\textbf{Keywords:}
+Internet of Things, ESP32, Fire Detection,
+MQ-2, LM35, Flame Sensor, Early Warning System.
+
+% ==========================================
+\section{Introduction}
+% ==========================================
+
+Fire detection and early warning play an important role
+in protecting residential environments, workplaces,
+and other indoor facilities. Undetected flames, abnormal
+temperature increases, and smoke or gas accumulation
+may lead to hazardous conditions. Early recognition of
+these indicators can support faster responses and
+reduce potential risks.
+
+Traditional fire warning systems commonly depend on
+individual sensing mechanisms or local alarms.
+However, environmental disturbances such as cooking
+smoke may trigger unwanted warnings, while a single
+sensor may not adequately represent different fire
+conditions \cite{yu2023multidetector,fathoni2025multisensor}.
+Recent studies have investigated multisensor detection
+and more advanced classification methods to improve
+fire monitoring.
+
+This project develops a low-cost fire detection and
+warning prototype using an ESP32 microcontroller.
+Three sensing components are integrated: an LM35
+temperature sensor, an MQ-2 smoke/gas sensor, and a
+flame sensor. The ESP32 processes their readings
+locally and determines one of three operating states:
+SAFE, WARNING, or DANGER.
+
+In addition to visual and audible warnings, the
+system uses an SG90 servo motor to demonstrate an
+automatic door-opening mechanism. A physical push
+button allows manual control when no dangerous
+condition is active.
+
+The main objectives of this project are to:
+
+\begin{enumerate}
+    \item Integrate temperature, smoke/gas, and
+    flame detection using an ESP32.
+    
+    \item Implement a three-level warning algorithm
+    based on sensor signals.
+    
+    \item Provide local warnings through LEDs,
+    an LCD, and a buzzer.
+    
+    \item Demonstrate automatic and manual
+    door-control behavior.
+    
+    \item Verify system functionality through
+    predefined test scenarios.
+\end{enumerate}
+
+The present implementation focuses on local
+monitoring and actuator control. Wireless monitoring
+and configurable warning policies are considered
+future improvements rather than completed features.
+
+% ==========================================
+\subsection{Related Work}
+% ==========================================
+
+Several studies have explored multisensor approaches
+to fire detection.
+
+Yu et al. \cite{yu2023multidetector} investigated
+real-time fire alarm technology using signal similarity
+between multiple detectors. Their work combined
+temporal signal alignment and correlation analysis
+to support fire-event classification.
+
+Fathoni et al. \cite{fathoni2025multisensor} proposed
+a multisensor fire and hazardous-gas detection system
+using an artificial neural network based on a Radial
+Basis Function Network. Their system processed flame,
+gas, temperature, and humidity information.
+
+Purba et al. \cite{purba2026smartsafety} developed
+an ESP32-based multi-hazard monitoring system
+using a hierarchical decision-tree approach.
+The system classified environmental conditions
+into SAFE, ALERT, and DANGER states.
+
+Ramadani \cite{ramadani2026blynk} presented an
+ESP32-based early fire detection system integrating
+flame and gas sensors with Blynk monitoring and
+Telegram notifications. This work demonstrates
+an approach to extending local detection with
+remote monitoring capabilities.
+
+Other studies have examined gas sensor calibration,
+temporal signal analysis, and fuzzy-logic-based
+hazard assessment
+\cite{solorzano2022gas,nakip2021rtpnn,
+rehman2021smartfire}.
+
+Compared with these approaches, the proposed
+G2 prototype employs a simpler rule-based algorithm.
+This design reduces implementation complexity and
+does not require a machine-learning training dataset.
+However, its fixed thresholds and digital detection
+inputs may be susceptible to environmental
+interference and false alarms.
+
+% ==========================================
+\section{Methods and Materials}
+% ==========================================
+
+\subsection{System Architecture}
+
+The proposed prototype consists of three main
+functional layers: sensor acquisition, local
+processing, and warning/actuation.
+
+The sensing layer includes the LM35 temperature
+sensor, MQ-2 smoke/gas sensor, and flame sensor.
+These devices provide environmental information
+to the ESP32 microcontroller.
+
+The processing layer evaluates sensor inputs using
+a prioritized rule-based algorithm. The result
+determines the current warning state.
+
+The output layer includes three LEDs, an active
+buzzer, a 16x2 I2C LCD, and an SG90 servo motor.
+The manual push button provides an additional
+input for door control.
+
+Figure~\ref{fig:block} illustrates the system
+architecture. Remote monitoring components
+present in the proposed architecture are not
+part of the implemented firmware.
+
+% ===== FIGURE 1: BLOCK DIAGRAM =====
+
+\begin{figure}[!htbp]
+    \centering
+    \includegraphics[
+        width=\textwidth,
+        height=0.58\textheight,
+        keepaspectratio
+    ]{src/BlockDiagram_IOT102_G2-BlockDiagram.drawio.png}
+
+    \caption{System architecture of the ESP32-based
+    fire detection prototype. Cloud monitoring
+    represents a proposed future extension.}
+    \label{fig:block}
+\end{figure}
+\FloatBarrier
+
+
+
+\subsection{Hardware Components}
+
+The main controller is an ESP32 DevKit board
+with a 30-pin configuration and USB Type-C
+connection. Its GPIO interfaces support digital
+sensor input, analog measurement, I2C communication,
+and actuator control.
+
+Table~\ref{tab:hardware} summarizes the
+main components.
+
+\begin{table}[!htbp]
+\centering
+\caption{Main Hardware Components}
+\label{tab:hardware}
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{|p{4cm}|p{9cm}|}
+\hline
+\textbf{Component} & \textbf{Function} \\
+\hline
+ESP32 DevKit &
+Central processing and control unit. \\
+\hline
+LM35 &
+Measures temperature through an analog voltage. \\
+\hline
+MQ-2 &
+Provides a digital smoke/gas detection signal. \\
+\hline
+Flame Sensor &
+Provides a digital flame detection signal. \\
+\hline
+LCD1602 I2C &
+Displays sensor information and system status. \\
+\hline
+Three LEDs &
+Indicate SAFE, WARNING, and DANGER. \\
+\hline
+Active Buzzer &
+Generates audible warning signals. \\
+\hline
+SG90 Servo &
+Simulates automatic door opening. \\
+\hline
+Push Button &
+Allows manual door control. \\
+\hline
+\end{tabular}
+\end{table}
+\FloatBarrier
+
+\subsection{Circuit Design and GPIO Mapping}
+
+The prototype uses dedicated ESP32 GPIO pins
+for sensor inputs and output devices.
+
+The final firmware pin assignments are summarized
+in Table~\ref{tab:gpio}.
+
+\begin{table}[!htbp]
+\centering
+\caption{ESP32 GPIO Assignments}
+\label{tab:gpio}
+\renewcommand{\arraystretch}{1.15}
+\begin{tabular}{|p{7cm}|p{3cm}|}
+\hline
+\textbf{Device / Signal} &
+\textbf{ESP32 GPIO} \\
+\hline
+LM35 Analog Output & GPIO34 \\
+\hline
+MQ-2 Digital Output & GPIO18 \\
+\hline
+Flame Sensor Digital Output & GPIO19 \\
+\hline
+LCD I2C SDA & GPIO21 \\
+\hline
+LCD I2C SCL & GPIO22 \\
+\hline
+Active Buzzer Control & GPIO15 \\
+\hline
+Manual Button & GPIO33 \\
+\hline
+SG90 Servo Signal & GPIO32 \\
+\hline
+Green LED & GPIO25 \\
+\hline
+Yellow LED & GPIO26 \\
+\hline
+Red LED & GPIO27 \\
+\hline
+\end{tabular}
+\end{table}
+\FloatBarrier
+
+The ESP32 development board receives a 5 V
+input supply. In the assembled prototype,
+the LM35 and active buzzer are powered from
+the board's 3.3 V output. The buzzer was
+operated at a reduced supply voltage to
+lower the sound level during classroom
+demonstrations.
+
+The nominal LM35 supply requirements and
+the operating range of the buzzer require
+separate verification against their respective
+component specifications. In addition,
+voltage levels from 5 V sensor modules
+and I2C pull-up connections must be checked
+for compatibility with ESP32 GPIO inputs.
+
+Figure~\ref{fig:circuit} presents the circuit
+schematic. It should be verified against
+the physical wiring before final submission.
+
+% ===== FIGURE 2: CIRCUIT SCHEMATIC =====
+
+\begin{figure}[!htbp]
+    \centering
+    \includegraphics[
+        width=\textwidth,
+        height=0.55\textheight,
+        keepaspectratio
+    ]{src/BlockDiagram_IOT102_G2-Circuit Schematic.drawio.png}
+
+    \caption{Circuit schematic and GPIO connections
+    of the ESP32 fire detection prototype.}
+    \label{fig:circuit}
+\end{figure}
+\FloatBarrier
+
+
+\subsection{Sensor Data Processing}
+
+The LM35 generates an analog output voltage
+proportional to temperature, with a nominal
+scale factor of 10 mV per degree Celsius.
+
+The temperature is calculated as:
+
+\begin{equation}
+T = \frac{V_{\mathrm{mV}}}{10}
+\end{equation}
+
+where $T$ is the estimated temperature in
+degrees Celsius and $V_{\mathrm{mV}}$ is the
+measured sensor output voltage in millivolts.
+
+The ESP32 firmware uses
+\texttt{analogReadMilliVolts()} to obtain voltage
+readings. Ten samples are collected, with a
+5 ms delay after each reading, and their
+average is used to calculate temperature.
+
+This averaging approach helps reduce random
+measurement fluctuations. However, it does not
+replace independent sensor calibration.
+ADC calibration and noise are discussed in
+the official Espressif documentation
+\cite{espressif_adc_calibration}.
+
+The MQ-2 and flame sensor modules are read
+through digital output pins. Both signals
+are treated as active LOW in the firmware.
+Therefore, a LOW input indicates an activated
+detection condition.
+
+\subsection{Fire Detection Algorithm}
+
+The fire detection algorithm categorizes
+environmental conditions into three states:
+SAFE, WARNING, and DANGER.
+
+Two temperature thresholds are configured:
+
+\begin{equation}
+T_{\mathrm{warning}} = 40^\circ C
+\end{equation}
+
+\begin{equation}
+T_{\mathrm{danger}} = 43^\circ C
+\end{equation}
+
+The DANGER condition is defined as:
+
+\begin{equation}
+D = F \lor S \lor (T \geq 43)
+\end{equation}
+
+where $F$ represents flame detection,
+$S$ represents MQ-2 detection, and $T$
+represents the estimated temperature
+in degrees Celsius.
+
+If $D$ is true, the system enters DANGER.
+
+Otherwise, a temperature of at least
+$40^\circ C$ activates WARNING.
+
+If neither condition is satisfied,
+the system remains in SAFE.
+
+Table~\ref{tab:states} summarizes the
+corresponding outputs.
+
+\begin{table}[!htbp]
+\centering
+\caption{System Warning States}
+\label{tab:states}
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{|p{2.2cm}|p{5cm}|p{5cm}|}
+\hline
+\textbf{State} &
+\textbf{Condition} &
+\textbf{Output Behavior} \\
+\hline
+SAFE &
+No danger; temperature below 40$^\circ$C &
+Green LED ON; buzzer OFF \\
+\hline
+WARNING &
+No danger; temperature at least 40$^\circ$C &
+Yellow LED ON; intermittent buzzer \\
+\hline
+DANGER &
+Flame OR MQ-2 detection OR temperature
+at least 43$^\circ$C &
+Red LED ON; continuous buzzer;
+door forced OPEN \\
+\hline
+\end{tabular}
+\end{table}
+\FloatBarrier
+
+The intermittent warning signal follows
+a nominal 500 ms ON and 500 ms OFF pattern.
+During DANGER, the buzzer remains continuously
+activated.
+
+The SG90 servo is commanded to 90 degrees
+when DANGER is detected. Manual closing
+is disabled while the danger condition
+remains active.
+
+When DANGER clears, the current door state
+is retained until a valid manual button
+action occurs.
+
+The button is configured with
+\texttt{INPUT\_PULLUP} and a 50 ms
+debounce interval.
+
+Figure~\ref{fig:flowchart} illustrates
+the main decision flow.
+
+% ===== FIGURE 3: SYSTEM FLOWCHART =====
+
+\begin{figure}[!htbp]
+    \centering
+    \includegraphics[
+        width=\textwidth,
+        height=0.68\textheight,
+        keepaspectratio
+    ]{src/BlockDiagram_IOT102_G2-FlowChart.drawio.png}
+
+    \caption{Fire detection and actuator control
+    flowchart based on the final firmware.}
+    \label{fig:flowchart}
+\end{figure}
+\FloatBarrier
+
+
+
+\subsection{Software Implementation}
+
+The firmware is developed in the Arduino
+programming environment using the ESP32
+hardware platform.
+
+During initialization, the program
+configures GPIO directions, the ADC,
+I2C communication, serial communication,
+and servo control.
+
+The LCD1602 is accessed through I2C
+using GPIO21 as SDA and GPIO22 as SCL.
+The firmware checks the common PCF8574
+addresses 0x27 and 0x3F.
+
+The main execution loop repeatedly performs
+sensor acquisition, state classification,
+warning output updates, button processing,
+and LCD/Serial status reporting.
+
+Serial communication operates at
+115200 baud and provides information
+for observing sensor and system states.
+
+The implemented firmware does not
+include WiFi communication, MQTT,
+Node-RED, Blynk, or cloud logging.
+
+% ==========================================
+\section{Results and Discussion}
+% ==========================================
+
+\subsection{Experimental Procedure}
+
+The prototype was evaluated through
+eight predefined functional test scenarios.
+
+The objective of these tests was to verify
+whether the system produced the expected
+warning state and actuator behavior
+under selected input conditions.
+
+The group reported that all eight
+scenarios behaved as expected.
+
+The evaluation focused on functional
+behavior rather than statistical
+fire-detection performance.
+
+\subsection{Functional Testing Results}
+
+Table~\ref{tab:tests} summarizes the
+test scenarios and their reported results.
+
+\begin{table}[!htbp]
+\centering
+\caption{Functional Test Results}
+\label{tab:tests}
+\renewcommand{\arraystretch}{1.15}
+\small
+\begin{tabular}{|p{1cm}|p{5.2cm}|p{5cm}|p{1.2cm}|}
+\hline
+\textbf{ID} &
+\textbf{Test Scenario} &
+\textbf{Expected Behavior} &
+\textbf{Result} \\
+\hline
+TC01 &
+Normal temperature, no flame or gas/smoke detection &
+SAFE; green LED ON &
+PASS \\
+\hline
+TC02 &
+Temperature in warning range; no other danger signal &
+WARNING; yellow LED and intermittent buzzer &
+PASS \\
+\hline
+TC03 &
+Temperature at least 43$^\circ$C &
+DANGER; continuous alarm &
+PASS \\
+\hline
+TC04 &
+Flame sensor activated &
+DANGER; door opens &
+PASS \\
+\hline
+TC05 &
+MQ-2 digital detection activated &
+DANGER; door opens &
+PASS \\
+\hline
+TC06 &
+Manual button pressed during DANGER &
+Door remains open &
+PASS \\
+\hline
+TC07 &
+Danger condition removed &
+Door retains its open state &
+PASS \\
+\hline
+TC08 &
+Manual button pressed during SAFE &
+Door toggles position &
+PASS \\
+\hline
+\end{tabular}
+\end{table}
+\FloatBarrier
+
+All eight predefined functional scenarios
+were reported as passing during prototype
+testing.
+
+This result indicates that the observed
+behavior matched the expected outcomes
+for the selected scenarios.
+
+However, functional test completion
+should not be interpreted as a measured
+100\% fire-detection accuracy.
+
+A statistically meaningful accuracy
+evaluation would require additional
+labeled fire and non-fire samples,
+repeated trials, and analysis of
+false-positive and false-negative events.
+
+\subsection{Prototype Demonstration}
+
+The physical prototype integrates
+sensors, warning indicators, an LCD,
+and the SG90 door mechanism.
+
+A photograph of the completed hardware
+will be inserted in the final report
+after the demonstration images
+have been collected.
+
+% ----- FIGURE 4: PROTOTYPE PHOTO -----
+\begin{figure}[!htbp]
+    \centering
+    \IfFileExists{src/prototype.png}{
+        \includegraphics[
+            width=0.80\linewidth,
+            height=5cm,
+            keepaspectratio
+        ]{src/prototype.png}
+    }{
+        \fbox{
+            \parbox[c][2.5cm][c]{0.80\linewidth}{
+                \centering
+                PHYSICAL PROTOTYPE PHOTO\\
+                TO BE INSERTED
+            }
+        }
+    }
+    \caption{Physical prototype of the
+    ESP32-based fire detection system.}
+    \label{fig:prototype}
+\end{figure}
+\FloatBarrier
+
+\subsection{Discussion}
+
+The experimental observations support
+the basic functionality of the
+three-state warning mechanism and
+servo-control logic.
+
+One advantage of the proposed design
+is that warning decisions are processed
+directly on the ESP32. Consequently,
+the local alarm does not require
+Internet connectivity.
+
+The prioritized DANGER condition
+also allows the system to respond
+when a single sensor reports
+a potentially hazardous event.
+
+However, the same design may trigger
+unwanted alarms when smoke or
+gas detection is caused by
+non-fire activities.
+
+Research on multisensor fusion and
+signal analysis has demonstrated
+alternative approaches to distinguishing
+fire conditions from environmental
+interference
+\cite{yu2023multidetector,
+solorzano2022gas,nakip2021rtpnn}.
+
+The present prototype does not
+implement those advanced classification
+techniques. Instead, it prioritizes
+simplicity and functional demonstration.
+
+Additional limitations include
+the absence of independently measured
+response latency, sensor accuracy,
+false-alarm rate, and long-term
+reliability data.
+
+The assembled LM35 supply configuration
+and the interface voltage levels of
+5 V modules also require hardware-level
+verification.
+
+Furthermore, the servo represents
+a small-scale demonstration mechanism
+rather than a certified emergency
+door-control system.
+
+% ==========================================
+\section{Conclusion}
+% ==========================================
+
+This project developed an ESP32-based
+fire detection and warning prototype
+using LM35, MQ-2, and flame sensors.
+
+A rule-based algorithm classifies
+environmental conditions into
+SAFE, WARNING, and DANGER states.
+
+The system provides local visual
+and audible warnings through three
+LEDs, an LCD1602 display, and
+an active buzzer.
+
+An SG90 servo motor demonstrates
+automatic door opening during
+dangerous conditions, while
+a push button supports manual
+control outside the DANGER state.
+
+The group reported successful
+functional behavior across eight
+predefined test scenarios.
+
+The prototype demonstrates the
+feasibility of integrating multiple
+sensors, local warning indicators,
+and actuator control using ESP32.
+It is an educational prototype
+and has not been validated as a
+certified fire-safety device.
+
+Future work may include sensor
+calibration, response-time measurement,
+false-alarm evaluation, adaptive
+warning policies, and remote
+monitoring through platforms such
+as Blynk.
+
+These enhancements should preserve
+local safety functions even if
+network connectivity is unavailable.
+
+% ==========================================
+\section*{Author Contributions}
+% ==========================================
+
+All three members contributed equally
+to the project, with complementary
+responsibilities.
+
+\textbf{Hoang Nhat Tam (SE202018):}
+Project coordination, task allocation,
+literature research, report preparation,
+and design review.
+
+\textbf{Phan Tan Hung (SE201027):}
+ESP32 firmware development,
+sensor integration, warning logic,
+debugging, and functional testing.
+
+\textbf{Le Vo Tuan Kiet (SE203376):}
+Hardware assembly, wiring,
+prototype integration, actuator testing,
+and hardware troubleshooting.
+
+All members participated in system
+review, functional evaluation,
+and demonstration preparation.
+
+% ==========================================
+\begin{thebibliography}{99}
+% ==========================================
+
+\bibitem{yu2023multidetector}
+M. Yu, H. Yuan, K. Li, and J. Wang,
+``Research on multi-detector real-time fire
+alarm technology based on signal similarity,''
+\textit{Fire Safety Journal},
+vol. 136, Art. no. 103724, 2023.
+doi: 10.1016/j.firesaf.2022.103724.
+
+\bibitem{fathoni2025multisensor}
+K. Fathoni, A. F. Suni, N. Iksan,
+and M. S. Aziz,
+``Multisensor Integration in Early Fire and Gas
+Detection Based on Artificial Neural Network,''
+\textit{Edu Komputika Journal},
+vol. 12, no. 2, pp. 157--167, 2025.
+doi: 10.15294/edukom.v12i2.27436.
+
+\bibitem{purba2026smartsafety}
+J. Purba, D. Kiswanto, J. B. Henrydunan,
+and R. Dly,
+``Smart Safety Room: ESP32 Decision Tree-Based
+Multi-Hazard Detection System,''
+\textit{Journal of Artificial Intelligence
+and Engineering Applications},
+vol. 5, no. 2, pp. 2627--2637, 2026.
+doi: 10.59934/jaiea.v5i2.1947.
+
+\bibitem{ramadani2026blynk}
+N. Ramadani,
+``IoT-Based Early Fire Detection System using
+Flame and Gas Sensors with Telegram Bot and
+Blynk Dashboard Integration,''
+\textit{Journal of Artificial Intelligence
+and Engineering Applications},
+vol. 6, no. 1, pp. 603--612, 2026.
+doi: 10.59934/jaiea.v6i1.2805.
+
+\bibitem{solorzano2022gas}
+A. Solorzano et al.,
+``Early fire detection based on gas sensor
+arrays: Multivariate calibration and validation,''
+\textit{Sensors and Actuators B: Chemical}, 2022.
+doi: 10.1016/j.snb.2021.130961.
+
+\bibitem{nakip2021rtpnn}
+M. Nakip, C. Guzelis, and O. Yildiz,
+``Recurrent Trend Predictive Neural Network
+for Multi-Sensor Fire Detection,''
+\textit{IEEE Access},
+vol. 9, pp. 84204--84216, 2021.
+doi: 10.1109/ACCESS.2021.3087736.
+
+\bibitem{rehman2021smartfire}
+A. Rehman et al.,
+``Smart Fire Detection and Deterrent System
+for Human Savior by Using Internet of Things
+(IoT),''
+\textit{Energies},
+vol. 14, no. 17, Art. no. 5500, 2021.
+doi: 10.3390/en14175500.
+
+\bibitem{espressif_adc_calibration}
+Espressif Systems,
+``Analog to Digital Converter (ADC)
+Calibration Driver,''
+\textit{ESP-IDF Programming Guide}.
+[Online]. Available:
+\texttt{https://docs.espressif.com/projects/esp-idf/}
+
+\end{thebibliography}
+
+% ==========================================
+\section*{AI Usage Declaration}
+% ==========================================
+
+Generative Artificial Intelligence (AI),
+particularly ChatGPT by OpenAI, was used
+as a supporting tool during the development
+and documentation of this project.
+
+AI assistance was primarily used for
+exploring scientific literature,
+understanding technical concepts,
+reviewing system architecture,
+discussing sensor integration and
+fire detection logic, and improving
+the organization and academic language
+of the final report.
+
+The project team critically reviewed
+AI-generated suggestions against
+the implemented source code,
+hardware design, technical documentation,
+and available functional testing results.
+AI-generated content was not automatically
+accepted as technically correct.
+
+In particular, the team distinguished
+between implemented features and
+proposed future improvements, including
+remote monitoring through IoT platforms
+such as Blynk.
+
+All final design decisions,
+implementation activities,
+experimental observations,
+and conclusions remain the
+responsibility of the project members.
+
+Selected AI-assisted decisions,
+verification activities, and reflections
+are documented separately in the
+AI Audit Log.
+
+\end{document}

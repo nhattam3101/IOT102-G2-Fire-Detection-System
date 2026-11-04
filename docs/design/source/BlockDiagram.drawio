@@ -1,0 +1,131 @@
+<mxfile host="app.diagrams.net">
+  <diagram name="Page-1" id="d2hKtgUREkloomfm5S88">
+    <mxGraphModel dx="1033" dy="571" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="PTSt0989b9kfR49b5xpf-9" edge="1" parent="1" source="PTSt0989b9kfR49b5xpf-1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;endFill=0;">
+          <mxGeometry relative="1" x="-0.4" as="geometry">
+            <Array as="points">
+              <mxPoint x="300" y="320" />
+            </Array>
+            <mxPoint x="460" y="320" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="PTSt0989b9kfR49b5xpf-1" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="MQ-2 Smoke/Gas Sensor" vertex="1">
+          <mxGeometry height="60" width="120" x="240" y="220" as="geometry" />
+        </mxCell>
+        <mxCell id="PTSt0989b9kfR49b5xpf-10" edge="1" parent="1" source="PTSt0989b9kfR49b5xpf-2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;endFill=0;">
+          <mxGeometry relative="1" x="-0.4" as="geometry">
+            <Array as="points">
+              <mxPoint x="620" y="320" />
+            </Array>
+            <mxPoint x="460" y="320" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="PTSt0989b9kfR49b5xpf-2" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="Flame Sensor" vertex="1">
+          <mxGeometry height="60" width="120" x="560" y="220" as="geometry" />
+        </mxCell>
+        <mxCell id="PTSt0989b9kfR49b5xpf-11" edge="1" parent="1" source="PTSt0989b9kfR49b5xpf-3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="PTSt0989b9kfR49b5xpf-4">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="PTSt0989b9kfR49b5xpf-3" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="LM35 Temperature Sensor" vertex="1">
+          <mxGeometry height="60" width="120" x="400" y="220" as="geometry" />
+        </mxCell>
+        <mxCell id="PTSt0989b9kfR49b5xpf-24" edge="1" parent="1" source="PTSt0989b9kfR49b5xpf-4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;endFill=0;">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="460" y="459.9999999999999" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="PTSt0989b9kfR49b5xpf-4" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="ESP32&lt;div&gt;(Microcontroller)&lt;/div&gt;" vertex="1">
+          <mxGeometry height="60" width="120" x="400" y="360" as="geometry" />
+        </mxCell>
+        <mxCell id="PTSt0989b9kfR49b5xpf-12" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="LED Indicators" vertex="1">
+          <mxGeometry height="60" width="120" x="160" y="500" as="geometry" />
+        </mxCell>
+        <mxCell id="PTSt0989b9kfR49b5xpf-13" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="&lt;div&gt;&lt;p&gt;LCD display&lt;/p&gt;&lt;/div&gt;&lt;p&gt;&lt;/p&gt;" vertex="1">
+          <mxGeometry height="60" width="120" x="640" y="500" as="geometry" />
+        </mxCell>
+        <mxCell id="PTSt0989b9kfR49b5xpf-14" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="Servo SG90&lt;div&gt;(&lt;span style=&quot;background-color: transparent; color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));&quot;&gt;Automatic &lt;/span&gt;&lt;span style=&quot;background-color: transparent; color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));&quot;&gt;Door)&lt;/span&gt;&lt;/div&gt;" vertex="1">
+          <mxGeometry height="60" width="120" x="480" y="500" as="geometry" />
+        </mxCell>
+        <mxCell id="PTSt0989b9kfR49b5xpf-15" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="Buzzer" vertex="1">
+          <mxGeometry height="60" width="120" x="320" y="500" as="geometry" />
+        </mxCell>
+        <mxCell id="PTSt0989b9kfR49b5xpf-17" edge="1" parent="1" style="endArrow=none;html=1;rounded=0;" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="220" y="460" as="sourcePoint" />
+            <mxPoint x="700" y="460" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="PTSt0989b9kfR49b5xpf-20" edge="1" parent="1" style="endArrow=classic;html=1;rounded=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="PTSt0989b9kfR49b5xpf-12" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="220" y="460" as="sourcePoint" />
+            <mxPoint x="260" y="390" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="PTSt0989b9kfR49b5xpf-21" edge="1" parent="1" style="endArrow=classic;html=1;rounded=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="539.5" y="460" as="sourcePoint" />
+            <mxPoint x="539.5" y="500" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="PTSt0989b9kfR49b5xpf-22" edge="1" parent="1" style="endArrow=classic;html=1;rounded=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="699.5" y="460" as="sourcePoint" />
+            <mxPoint x="699.5" y="500" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="PTSt0989b9kfR49b5xpf-23" edge="1" parent="1" style="endArrow=classic;html=1;rounded=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="379.5" y="460" as="sourcePoint" />
+            <mxPoint x="379.5" y="500" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="PTSt0989b9kfR49b5xpf-25" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="&lt;div&gt;&lt;p&gt;MQTT Broker&lt;/p&gt;&lt;/div&gt;&lt;div&gt;&lt;p&gt;&lt;/p&gt;&lt;/div&gt;" vertex="1">
+          <mxGeometry height="60" width="120" x="600" y="360" as="geometry" />
+        </mxCell>
+        <mxCell id="PTSt0989b9kfR49b5xpf-35" edge="1" parent="1" source="PTSt0989b9kfR49b5xpf-26" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="PTSt0989b9kfR49b5xpf-34">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="860" y="310" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="PTSt0989b9kfR49b5xpf-26" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="&lt;div&gt;&lt;p&gt;Node-RED&lt;/p&gt;&lt;/div&gt;&lt;div&gt;&lt;p&gt;&lt;/p&gt;&lt;/div&gt;" vertex="1">
+          <mxGeometry height="60" width="120" x="800" y="360" as="geometry" />
+        </mxCell>
+        <mxCell id="PTSt0989b9kfR49b5xpf-27" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="Web Dashboard" vertex="1">
+          <mxGeometry height="60" width="120" x="1000" y="360" as="geometry" />
+        </mxCell>
+        <mxCell id="PTSt0989b9kfR49b5xpf-29" edge="1" parent="1" source="PTSt0989b9kfR49b5xpf-4" style="endArrow=classic;startArrow=classic;html=1;rounded=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="PTSt0989b9kfR49b5xpf-25" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="540" y="410" as="sourcePoint" />
+            <mxPoint x="590" y="360" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="PTSt0989b9kfR49b5xpf-30" edge="1" parent="1" style="endArrow=classic;startArrow=classic;html=1;rounded=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="720" y="389.5" as="sourcePoint" />
+            <mxPoint x="800" y="389.5" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="PTSt0989b9kfR49b5xpf-31" edge="1" parent="1" style="endArrow=classic;startArrow=classic;html=1;rounded=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="920" y="389.5" as="sourcePoint" />
+            <mxPoint x="1000" y="389.5" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="PTSt0989b9kfR49b5xpf-32" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="WiFi/MQTT" vertex="1">
+          <mxGeometry height="30" width="60" x="530" y="370" as="geometry" />
+        </mxCell>
+        <mxCell id="PTSt0989b9kfR49b5xpf-33" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="MQTT" vertex="1">
+          <mxGeometry height="30" width="60" x="730" y="370" as="geometry" />
+        </mxCell>
+        <mxCell id="PTSt0989b9kfR49b5xpf-34" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="&lt;div&gt;Data Logging&amp;nbsp;&lt;/div&gt;&lt;div&gt;(CSV)&lt;/div&gt;&lt;p&gt;&lt;/p&gt;" vertex="1">
+          <mxGeometry height="60" width="120" x="1000" y="280" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
